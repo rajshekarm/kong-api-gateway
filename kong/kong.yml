@@ -15,3 +15,10 @@ services:
     url: http://pms:8000
     routes:
       - paths: [/pms]
+
+  - name: test
+    url: http://example.com
+    routes:
+      - name: test-route
+        paths:
+        - /test

@@ -51,7 +51,8 @@ def main():
         # Start Kong
         # --------------------------------------------------
         print("🐳 Starting Kong...")
-        conn.run(f"cd {APP_DIR} && sudo docker compose up -d", hide=False)
+        conn.run(f"cd {APP_DIR} && sudo docker compose restart kong", hide=False)
+
 
         print("🎉 Kong deployed successfully")
     except UnexpectedExit as e:
