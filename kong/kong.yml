@@ -1,0 +1,17 @@
+_format_version: "3.0"
+
+services:
+  - name: ai
+    url: http://ai:8000
+    routes:
+      - paths: [/ai]
+
+  - name: oms
+    url: http://oms:8000
+    routes:
+      - paths: [/oms]
+
+  - name: pms
+    url: http://pms:8000
+    routes:
+      - paths: [/pms]
