@@ -13,6 +13,14 @@ def main():
         connect_kwargs={"key_filename": EC2_KEY},
     )
 
+    print("📦 Installing Docker (safe to re-run)...")
+    conn.run("sudo yum update -y", hide=False)
+    conn.run("sudo yum install -y docker git", hide=False)
+    conn.run("sudo systemctl start docker", hide=False)
+    conn.run("sudo systemctl enable docker", hide=False)
+    conn.run(f"sudo usermod -aG docker {EC2_USER}", hide=False)
+    
+
     print("📁 Preparing /opt/kong...")
     conn.run(f"sudo mkdir -p {APP_DIR}", hide=False)
     conn.run(f"sudo chown -R {EC2_USER}:{EC2_USER} {APP_DIR}", hide=False)
