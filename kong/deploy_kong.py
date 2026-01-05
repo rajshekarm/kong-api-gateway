@@ -1,5 +1,7 @@
 import os
+import sys
 from fabric import Connection
+from invoke import UnexpectedExit
 
 EC2_HOST = os.environ["EC2_HOST"]
 EC2_USER = os.environ.get("EC2_USER", "ubuntu")
@@ -8,47 +10,56 @@ APP_DIR  = "/opt/kong"
 
 def main():
     print("🔐 Connecting to EC2...")
-    conn = Connection(
-        host=f"{EC2_USER}@{EC2_HOST}",
-        connect_kwargs={"key_filename": EC2_KEY},
-    )
+    try:
+        conn = Connection(
+            host=f"{EC2_USER}@{EC2_HOST}",
+            connect_kwargs={"key_filename": EC2_KEY},
+        )
 
-    # --------------------------------------------------
-    # Check & Install Docker ONLY if missing (Ubuntu)
-    # --------------------------------------------------
-    print("🔍 Checking Docker installation...")
-    docker_check = conn.run("command -v docker", warn=True, hide=True)
+        # --------------------------------------------------
+            # Check & Install Docker 
+            # --------------------------------------------------
+        print("🔍 Checking Docker installation...")
+        docker_check = conn.run("command -v docker", warn=True, hide=True)
 
-    if docker_check.failed:
-        print("📦 Docker not found. Installing Docker...")
-        conn.run("sudo apt update -y", hide=False)
-        conn.run("sudo apt install -y docker.io docker-compose-plugin", hide=False)
-        conn.run(f"sudo usermod -aG docker {EC2_USER}", hide=False)
-        print("⚠️ Docker installed. A reconnect may be required.")
-    else:
-        print("✅ Docker already installed. Skipping install.")
+        if docker_check.failed:
+            print("📦 Docker not found. Installing via official script...")
+            # Using the official script ensures  get the 'docker compose' plugin
+            conn.run("curl -fsSL https://get.docker.com | sh", hide=False)
+            
+            # Still add user to group for future manual SSH access
+            conn.run(f"sudo usermod -aG docker {EC2_USER}", hide=False)
+            print(".........Docker installed successfully.")
+        else:
+            print("......Docker is already installed.")
 
-    # --------------------------------------------------
-    # Prepare application directory
-    # --------------------------------------------------
-    print("📁 Preparing /opt/kong...")
-    conn.run(f"sudo mkdir -p {APP_DIR}", hide=False)
-    conn.run(f"sudo chown -R {EC2_USER}:{EC2_USER} {APP_DIR}", hide=False)
+        # --------------------------------------------------
+        # Prepare application directory
+        # --------------------------------------------------
+        print("📁 Preparing /opt/kong...")
+        conn.run(f"sudo mkdir -p {APP_DIR}", hide=False)
+        conn.run(f"sudo chown -R {EC2_USER}:{EC2_USER} {APP_DIR}", hide=False)
 
-    # --------------------------------------------------
-    # Upload Kong config
-    # --------------------------------------------------
-    print("📤 Uploading Kong files...")
-    conn.put("docker-compose.yml", f"{APP_DIR}/docker-compose.yml")
-    conn.put("kong.yml", f"{APP_DIR}/kong.yml")
+        # --------------------------------------------------
+        # Upload Kong config
+        # --------------------------------------------------
+        print("📤 Uploading Kong files...")
+        conn.put("docker-compose.yml", f"{APP_DIR}/docker-compose.yml")
+        conn.put("kong.yml", f"{APP_DIR}/kong.yml")
 
-    # --------------------------------------------------
-    # Start Kong
-    # --------------------------------------------------
-    print("🐳 Starting Kong...")
-    conn.run(f"cd {APP_DIR} && docker compose up -d", hide=False)
+        # --------------------------------------------------
+        # Start Kong
+        # --------------------------------------------------
+        print("🐳 Starting Kong...")
+        conn.run(f"cd {APP_DIR} && sudo docker compose up -d", hide=False)
 
-    print("🎉 Kong deployed successfully")
+        print("🎉 Kong deployed successfully")
+    except UnexpectedExit as e:
+        print(f"\n❌ Remote command failed: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n❌ Connection failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
