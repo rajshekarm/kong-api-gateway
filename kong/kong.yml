@@ -18,13 +18,16 @@ services:
   - name: pms
     url : http://10.0.0.153:8003
     routes:
+      - name : "pms-service-route"
       - paths: 
         - /pms
   
   - name: blotter-service
     url : http://10.0.0.153:8004
     routes:
-      - paths: /blotter
+      - name : "oms-service-route"
+      - paths: 
+        - /blotter
 
   - name: test
     url: http://example.com
