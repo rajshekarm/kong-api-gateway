@@ -1,33 +1,20 @@
-
+_format_version: "3.0"
 
 services:
   - name: ai
-    url: http://10.0.0.153:8001
+    url: http://ai:8000
     routes:
-      - name : "ai-service-route"
-        paths: 
-        - /ai
+      - paths: [/ai]
 
   - name: oms
-    url: http://10.0.0.153:8002
+    url: http://oms:8000
     routes:
-      - name : "oms-service-route"
-        paths: 
-         -/oms
+      - paths: [/oms]
 
   - name: pms
-    url : http://10.0.0.153:8003
+    url: http://pms:8000
     routes:
-      - name : "pms-service-route"
-        paths: 
-        - /pms
-  
-  - name: blotter-service
-    url : http://10.0.0.153:8004
-    routes:
-      - name : "oms-service-route"
-        paths: 
-        - /blotter
+      - paths: [/pms]
 
   - name: test
     url: http://example.com
