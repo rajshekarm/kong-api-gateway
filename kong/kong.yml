@@ -2,17 +2,17 @@ _format_version: "3.0"
 
 services:
   - name: ai
-    url: http://10.0.0.153:8000
+    url: http://10.0.0.153:8001
     routes:
       - paths: [/ai]
 
   - name: oms
-    url: http://oms:8000
+    url: http://10.0.0.153:8002
     routes:
       - paths: [/oms]
 
   - name: pms
-    url: http://pms:8000
+    url: http://10.0.0.153:8003
     routes:
       - paths: [/pms]
 
