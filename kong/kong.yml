@@ -5,18 +5,21 @@ services:
     url: http://10.0.0.153:8001
     routes:
       - name : "ai-service-route"
-      - paths: /ai
+      - paths: 
+        - /ai
 
   - name: oms
     url: http://10.0.0.153:8002
     routes:
       - name : "oms-service-route"
-      - paths: /oms
+      - paths: 
+         -/oms
 
   - name: pms
     url : http://10.0.0.153:8003
     routes:
-      - paths: /pms
+      - paths: 
+        - /pms
   
   - name: blotter-service
     url : http://10.0.0.153:8004
