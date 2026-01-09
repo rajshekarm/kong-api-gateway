@@ -1,38 +1,53 @@
-name: Deploy Kong Gateway
+name: Deploy Kong API Gateway
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+    paths:
+      - kong/**
+      - docker-compose.yml
+
+env:
+  AWS_REGION: us-east-2
+  EC2_INSTANCE_ID: i-080d526874aee8c0e
+  APP_DIR: /opt/kong-api-gateway
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      # Assume AWS role (same as backend)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          python-version: "3.11"
+          role-to-assume: arn:aws:iam::589335871756:role/GithubActionsRole
+          aws-region: ${{ env.AWS_REGION }}
 
-      - name: Install dependencies
-        run: pip install fabric paramiko
-
-      - name: Setup SSH key
+      # Validate kong.yml before touching EC2
+      - name: Validate Kong config
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
-          chmod 600 ~/.ssh/ec2_key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          docker run --rm \
+            -v $PWD/kong/kong.yml:/kong/kong.yml \
+            kong:3.6 kong config parse /kong/kong.yml
 
-      - name: Deploy Kong
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          EC2_KEY_PATH: /home/runner/.ssh/ec2_key.pem
+      # Deploy via SSM
+      - name: Deploy Kong via SSM
         run: |
-          cd kong
-          python deploy_kong.py
+          aws ssm send-command \
+            --instance-ids "${EC2_INSTANCE_ID}" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Kong API Gateway" \
+            --parameters commands='[
+              "set -e",
+              "cd /opt/kong-api-gateway",
+              "git pull origin main",
+              "docker compose up -d"
+            ]'
