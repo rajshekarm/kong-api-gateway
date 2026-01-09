@@ -2,19 +2,26 @@ _format_version: "3.0"
 
 services:
   - name: ai
-    url: http://ai:8000
+    url: http://localhost:8001
     routes:
+      - name : "ai-service route"
       - paths: [/ai]
 
   - name: oms
-    url: http://oms:8000
+    url: http://localhost:8002
     routes:
+      - name : "oms service route"
       - paths: [/oms]
 
   - name: pms
-    url: http://pms:8000
+    url : http://localhost:8003
     routes:
-      - paths: [/pms]
+      - paths: [/portfolio]
+  
+  - name: pms
+    url : http://localhost:8004
+    routes:
+      - paths: [/blotter]
 
   - name: test
     url: http://example.com

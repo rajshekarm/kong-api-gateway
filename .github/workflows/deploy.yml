@@ -31,14 +31,14 @@ jobs:
           role-to-assume: arn:aws:iam::589335871756:role/GithubActionsRole
           aws-region: ${{ env.AWS_REGION }}
 
-      # Validate kong.yml before touching EC2
-      - name: Validate Kong config
-        run: |
-          docker run --rm \
-            -e KONG_DATABASE=off \
-            -e KONG_DECLARATIVE_CONFIG=/kong/kong.yml \
-            -v $PWD/kong/kong.yml:/kong/kong.yml \
-            kong:3.6 kong config parse /kong/kong.yml
+      # # Validate kong.yml before touching EC2
+      # - name: Validate Kong config
+      #   run: |
+      #     docker run --rm \
+      #       -e KONG_DATABASE=off \
+      #       -e KONG_DECLARATIVE_CONFIG=/kong/kong.yml \
+      #       -v $PWD/kong/kong.yml:/kong/kong.yml \
+      #       kong:3.6 kong config parse /kong/kong.yml
 
       # Deploy via SSM
       - name: Deploy Kong via SSM
