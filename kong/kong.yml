@@ -2,7 +2,7 @@ _format_version: "3.0"
 
 services:
   - name: ai
-    url: http://ai:8000
+    url: http://10.0.0.153:8000
     routes:
       - paths: [/ai]
 
